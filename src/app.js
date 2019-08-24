@@ -1,19 +1,26 @@
 import React, { PureComponent } from 'react'
 import { StyleSheet } from 'react-native'
 import { PanGestureHandler, State } from 'react-native-gesture-handler'
-import Animated from 'react-native-reanimated'
+import Animated, { Easing } from 'react-native-reanimated'
 import { colors } from './themes'
 
 const {
-  greaterThan,
+  and,
   Value,
+  call,
   debug,
   event,
   View,
+  Code,
   block,
   set,
+  startClock,
   cond,
-  eq
+  eq,
+  stopClock,
+  timing,
+  clockRunning,
+  Clock
 } = Animated
 
 export default class App extends PureComponent {
@@ -35,14 +42,23 @@ export default class App extends PureComponent {
     }
   ])
 
+  clock = new Clock()
+
+  clockState = {
+    finished: new Value(0),
+    position: new Value(0),
+    time: new Value(0),
+    frameTime: new Value(0)
+  }
+
+  clockConfig = {
+    duration: new Value(1000),
+    toValue: new Value(0),
+    easing: Easing.inOut(Easing.ease)
+  }
+
   constructor(props) {
     super(props)
-
-    this.transX = cond(
-      eq(this.gestureState, State.ACTIVE),
-      cond(greaterThan(this.dragX, 100), new Value(100), this.dragX),
-      new Value(0)
-    )
 
     this.transY = cond(
       eq(this.gestureState, State.ACTIVE),
@@ -52,8 +68,40 @@ export default class App extends PureComponent {
   }
 
   render() {
+    const { clock, clockState, clockConfig, gestureState, dragX, transX } = this
+
     return (
       <View style={styles.container}>
+        <Code>
+          {() =>
+            block([
+              cond(
+                and(
+                  eq(gestureState, State.END),
+                  eq(clockRunning(clock), false)
+                ),
+                [
+                  set(clockState.finished, 0),
+                  set(clockState.time, 0),
+                  set(clockState.frameTime, 0),
+                  set(clockState.position, dragX),
+                  startClock(clock)
+                ],
+                set(transX, dragX)
+              ),
+
+              cond(clockRunning(clock), [
+                timing(clock, clockState, clockConfig),
+                set(transX, clockState.position),
+                cond(clockState.finished, [
+                  stopClock(clock),
+                  call([dragX], console.log)
+                ])
+              ])
+            ])
+          }
+        </Code>
+
         <PanGestureHandler
           onGestureEvent={this.onGestureEvent}
           onHandlerStateChange={this.onGestureEvent}
