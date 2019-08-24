@@ -4,7 +4,17 @@ import { PanGestureHandler, State } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { colors } from './themes'
 
-const { Value, debug, event, View, block, set, cond, eq } = Animated
+const {
+  greaterThan,
+  Value,
+  debug,
+  event,
+  View,
+  block,
+  set,
+  cond,
+  eq
+} = Animated
 
 export default class App extends PureComponent {
   dragX = new Value(0)
@@ -30,7 +40,7 @@ export default class App extends PureComponent {
 
     this.transX = cond(
       eq(this.gestureState, State.ACTIVE),
-      this.dragX,
+      cond(greaterThan(this.dragX, 100), new Value(100), this.dragX),
       new Value(0)
     )
 
@@ -43,11 +53,11 @@ export default class App extends PureComponent {
 
   render() {
     return (
-      <PanGestureHandler
-        onGestureEvent={this.onGestureEvent}
-        onHandlerStateChange={this.onGestureEvent}
-      >
-        <View style={styles.container}>
+      <View style={styles.container}>
+        <PanGestureHandler
+          onGestureEvent={this.onGestureEvent}
+          onHandlerStateChange={this.onGestureEvent}
+        >
           <View
             style={[
               styles.box,
@@ -55,15 +65,14 @@ export default class App extends PureComponent {
                 transform: [
                   {
                     translateX: this.transX,
-                    translateY: this.transY,
-                    rotate: this.transX
+                    translateY: this.transY
                   }
                 ]
               }
             ]}
           />
-        </View>
-      </PanGestureHandler>
+        </PanGestureHandler>
+      </View>
     )
   }
 }
