@@ -1,33 +1,35 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { PureComponent } from 'react'
+import { StyleSheet } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { colors } from './themes'
 
-import Swiper from './swiper'
+const { View, Value } = Animated
 
-function minTwoDigits(n) {
-  return (n < 10 ? '0' : '') + n
+export default class App extends PureComponent {
+  opacity = new Value(1)
+
+  constructor(props) {
+    super(props)
+    setTimeout(() => {
+      this.opacity.setValue(0.4)
+    }, 1000)
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.box,
+            {
+              opacity: this.opacity
+            }
+          ]}
+        />
+      </View>
+    )
+  }
 }
-
-const items = []
-
-for (let i = 1; i < 20; i++) {
-  items.push({
-    id: i,
-    url: `https://black-dev-static.s3-eu-west-1.amazonaws.com/flip_pic/seed/women/${minTwoDigits(
-      i
-    )}.jpg`
-  })
-}
-
-export default () => (
-  <View style={styles.container}>
-    <Swiper
-      items={items}
-      callback={([reaction, item]) => {
-        console.log(reaction, item)
-      }}
-    />
-  </View>
-)
 
 const styles = StyleSheet.create({
   container: {
@@ -35,5 +37,10 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'center',
     flex: 1
+  },
+  box: {
+    width: 130,
+    height: 130,
+    backgroundColor: colors.primary
   }
 })
