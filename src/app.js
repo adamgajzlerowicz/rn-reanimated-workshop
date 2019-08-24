@@ -1,32 +1,69 @@
 import React, { PureComponent } from 'react'
 import { StyleSheet } from 'react-native'
+import { PanGestureHandler, State } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { colors } from './themes'
 
-const { View, Value } = Animated
+const { Value, debug, event, View, block, set, cond, eq } = Animated
 
 export default class App extends PureComponent {
-  opacity = new Value(1)
+  dragX = new Value(0)
+  dragY = new Value(0)
+
+  transX = new Value(0)
+  transY = new Value(0)
+
+  gestureState = new Value(-1)
+
+  onGestureEvent = event([
+    {
+      nativeEvent: {
+        translationX: this.dragX,
+        translationY: this.dragY,
+        state: this.gestureState
+      }
+    }
+  ])
 
   constructor(props) {
     super(props)
-    setTimeout(() => {
-      this.opacity.setValue(0.4)
-    }, 1000)
+
+    this.transX = cond(
+      eq(this.gestureState, State.ACTIVE),
+      this.dragX,
+      new Value(0)
+    )
+
+    this.transY = cond(
+      eq(this.gestureState, State.ACTIVE),
+      this.dragY,
+      new Value(0)
+    )
   }
 
   render() {
     return (
-      <View style={styles.container}>
-        <View
-          style={[
-            styles.box,
-            {
-              opacity: this.opacity
-            }
-          ]}
-        />
-      </View>
+      <PanGestureHandler
+        onGestureEvent={this.onGestureEvent}
+        onHandlerStateChange={this.onGestureEvent}
+      >
+        <View style={styles.container}>
+          <View
+            style={[
+              styles.box,
+              {
+                transform: [
+                  {
+                    translateX: this.transX,
+                    translateY: this.transY,
+                    rotate: this.transX
+                  }
+                ]
+              }
+            ]}
+          />
+        </View>
+      </PanGestureHandler>
     )
   }
 }
