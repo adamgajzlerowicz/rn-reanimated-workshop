@@ -46,6 +46,7 @@
       "no-console": 0,
       "no-undef": 2,
       "prefer-const": 2,
+      "semi": ["error", "never"],
       "import/order": [
     "warn",
     {
